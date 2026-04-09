@@ -1,33 +1,66 @@
-<ion-card>
-  <ion-card-header>
-    <ion-label>Sua Senha:</ion-label>
-    <ion-input readonly="true" value="{{ inputNovaSenha }}"></ion-input>
-  </ion-card-header>
-  
-  <ion-card-content>
-    <ion-button expand="block" color="danger" (click)="gerarSenha('SG')">
-      Senha Geral
-    </ion-button>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Habbo Default API</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-    <ion-button expand="block" color="danger" (click)="gerarSenha('SP')">
-      Senha Prioritária
-    </ion-button>
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Explorador de Endpoints</ion-card-title>
+      <ion-card-subtitle>
+        Esta aplicação usa apenas a API pública default: <strong>https://www.habbo.com.br/api/public</strong>
+      </ion-card-subtitle>
+    </ion-card-header>
 
-    <ion-button expand="block" color="danger" (click)="gerarSenha('SE')">
-      Senha de Exame
-    </ion-button>
-
-    <ion-label *ngIf="tipoSenhaSelecionada !== ''">
-      Gerando senha do tipo: <br> <strong>{{ tipoSenhaSelecionada }}</strong>
-    </ion-label>
-
-    <br>
-
-    <ion-list slot="">
-      <ion-label>Últimas senhas geradas:</ion-label>
-      <ion-item *ngFor="let senha of ultimasSenhas">
-        {{ senha }}
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="stacked">Endpoint</ion-label>
+        <ion-select
+          interface="popover"
+          [(ngModel)]="selectedEndpointId"
+          (ionChange)="onEndpointChange($event.detail.value)"
+        >
+          <ion-select-option *ngFor="let endpoint of endpoints" [value]="endpoint.id">
+            {{ endpoint.label }}
+          </ion-select-option>
+        </ion-select>
       </ion-item>
-    </ion-list>
-  </ion-card-content>
-</ion-card>
+
+      <ng-container *ngFor="let param of activeEndpoint.params || []">
+        <ion-item>
+          <ion-label position="stacked">{{ param.label }}</ion-label>
+          <ion-input [(ngModel)]="fieldValues[param.key]"></ion-input>
+        </ion-item>
+      </ng-container>
+
+      <ng-container *ngFor="let param of activeEndpoint.queryParams || []">
+        <ion-item>
+          <ion-label position="stacked">{{ param.label }} (query)</ion-label>
+          <ion-input [(ngModel)]="fieldValues[param.key]"></ion-input>
+        </ion-item>
+      </ng-container>
+
+      <ion-button expand="block" class="ion-margin-top" (click)="carregarEndpoint()" [disabled]="loading">
+        {{ loading ? 'Carregando...' : 'Chamar endpoint' }}
+      </ion-button>
+
+      <ion-item lines="none" *ngIf="requestUrl">
+        <ion-label class="url-label">
+          <strong>URL:</strong><br>
+          {{ requestUrl }}
+        </ion-label>
+      </ion-item>
+
+      <ion-text color="danger" *ngIf="errorMessage">
+        <p class="ion-padding-top">{{ errorMessage }}</p>
+      </ion-text>
+
+      <ion-text *ngIf="responseBody">
+        <h2>Resposta</h2>
+      </ion-text>
+
+      <pre *ngIf="responseBody">{{ responseBody | json }}</pre>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
